@@ -1,88 +1,100 @@
 <!doctype html>
-<html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b0d16">
-<title>JuneBot · Live NHL board</title>
-<style>
-:root{color-scheme:dark;--bg:#0b0d16;--panel:#141926;--line:#2b3144;--text:#f1f3fa;--muted:#a1abc2;--accent:#c4b8fb;--mint:#95d6c5;--warn:#f0c99a;--fire:#ffb38a;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 15% 0%,#29223c66,transparent 55%),radial-gradient(ellipse at 90% 60%,#123f4933,transparent 60%),var(--bg);background-attachment:fixed;color:var(--text);min-height:100vh}
-header{position:sticky;top:0;z-index:5;background:#0d101bf2;backdrop-filter:blur(16px);border-bottom:1px solid #2a2e40;padding:14px 16px}
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1100px;margin:auto}
-.brand{font-size:22px;font-weight:750;letter-spacing:-.6px;background:linear-gradient(100deg,#cbc0fa,#9fc3ee,#a1d6c6);-webkit-background-clip:text;background-clip:text;color:transparent}
-.brand small{display:block;font-size:9px;letter-spacing:2px;color:#9aa6c2;-webkit-text-fill-color:#9aa6c2;font-weight:600}
-.live{display:flex;align-items:center;gap:8px;font-size:13px;border:1px solid var(--line);border-radius:20px;padding:6px 12px;background:#121726;white-space:nowrap}
-.dot{width:9px;height:9px;border-radius:50%;background:#6b7387}.on .dot{background:var(--mint);box-shadow:0 0 10px #95d6c5}.off .dot{background:#ff8a8a;box-shadow:0 0 10px #ff8a8a88}
-nav{display:flex;gap:6px;overflow-x:auto;max-width:1100px;margin:12px auto 0;scrollbar-width:none}nav::-webkit-scrollbar{display:none}
-nav button{flex:0 0 auto;font:inherit;font-size:14px;color:var(--muted);background:none;border:1px solid transparent;border-radius:9px;padding:8px 13px;cursor:pointer}
-nav button[aria-current]{background:#2a2942;border-color:#45415f;color:#ece6ff}
-main{max-width:1100px;margin:auto;padding:18px 16px 60px}
-h2{font-size:15px;color:#dcd5fb;margin:24px 0 10px;letter-spacing:.2px}
-.banner{border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:14px;border:1px solid}.banner.off{background:#3a1f24;border-color:#6a3a40;color:#ffd0d0}.banner.warn{background:#30271f;border-color:#614d39;color:var(--warn)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
-.card{background:linear-gradient(135deg,#191c2aee,#141d27ee);border:1px solid #34384c;border-radius:14px;padding:18px}
-.card.fire{border-color:#7a4a3a;background:linear-gradient(140deg,#3a1f24ee,#191c2aee 60%)}.card.good{border-color:#38504d;background:linear-gradient(140deg,#16302cee,#191c2aee 60%)}
-.head{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.badge{font-size:13px;font-weight:750;letter-spacing:.5px;padding:5px 10px;border-radius:8px}.fire .badge{background:#5a2a20;color:#ffd0b5}.good .badge{background:#1d3a33;color:#bff0e0}.low .badge{background:#3a2c1f;color:var(--warn)}
-.mult{font-size:34px;font-weight:720;letter-spacing:-1px;line-height:1}.fire .mult{color:var(--fire)}.good .mult{color:var(--mint)}.mult small{display:block;text-align:right;font-size:10px;color:var(--muted);font-weight:500;letter-spacing:0}
-.game{font-size:13px;color:#b9c2d6;margin:10px 0}
-.take{background:#0e131ecc;border:1px solid #2f364a;border-radius:11px;padding:11px 14px}.take b{display:block;font-size:10px;letter-spacing:1.5px;color:var(--accent);margin-bottom:4px}.take ol{margin:0;padding-left:20px}.take li{font-size:16px;font-weight:560;line-height:1.55}
-.odds{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.box{border:1px solid #33394d;border-radius:11px;padding:9px 12px;background:#121826}.box span{display:block;font-size:10px;letter-spacing:1.1px;color:var(--muted);text-transform:uppercase}.box strong{display:block;font-size:28px;font-weight:700;letter-spacing:-.6px;font-variant-numeric:tabular-nums}.box small{font-size:11px;color:var(--muted)}
-.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;font-size:11px;color:var(--muted)}.facts strong{display:block;font-size:16px;color:var(--text);font-variant-numeric:tabular-nums}
-.empty{text-align:center;padding:36px 18px;border:1px dashed #41495e;border-radius:13px;color:var(--muted)}.empty strong{display:block;color:var(--text);font-size:17px;margin-bottom:6px}
-table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left}th{font-size:10px;letter-spacing:.8px;color:var(--muted)}
-.team h3{margin:0 0 6px;font-size:16px}.team .ln{font-size:14px;padding:5px 0;border-top:1px solid #262b3b}.team .ln span{color:var(--muted);font-size:11px;margin-right:8px}
-.tag{font-size:10px;border:1px solid #4b435f;color:#cfc2f7;border-radius:5px;padding:2px 6px;margin-left:6px}
-.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px}.kv dt{color:var(--muted)}.kv dd{margin:0}
-.ok{color:var(--mint)}.bad{color:#ff9c9c}.mid{color:var(--warn)}
-.leg{font-size:14px;padding:4px 0}pre{white-space:pre-wrap;font:13px/1.5 inherit;color:#d5dbea;margin:8px 0 0}
-footer{color:var(--muted);font-size:11px;text-align:center;margin-top:30px}
-@media(max-width:420px){.mult{font-size:28px}.box strong{font-size:24px}.take li{font-size:15px}}
-</style></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="refresh-token" content="">
+  <meta name="theme-color" content="#0b0d16">
+  <title>JuneBot · Live NHL board</title>
+  <link rel="stylesheet" href="june.css"><script>window.JUNEBOT_PUBLIC={"gist": "0ecc43613fbcb54923a7004625b3b1b6", "login": "justinnub"}</script><script src="june.js" defer></script>
+</head>
 <body>
-<header><div class="top"><div class="brand">JuneBot<small>LIVE NHL BOARD</small></div><div class="live" id="live"><span class="dot"></span><span id="liveText">Loading…</span></div></div>
-<nav id="nav"><button data-t="parlays" aria-current="page">Parlays</button><button data-t="lines">Lines</button><button data-t="upcoming">Upcoming</button><button data-t="results">Results</button><button data-t="alerts">Alerts</button><button data-t="status">Last updated</button></nav></header>
-<main id="main"><div class="empty"><strong>Loading the board…</strong></div></main>
-<footer>Read-only view. Prices are actual sportsbook bet-slip quotes captured by JuneBot; confirm before placing. Times are Arizona.</footer>
-<script>
-const GIST='0ecc43613fbcb54923a7004625b3b1b6';
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const AZ={timeZone:'America/Phoenix'};
-const t=s=>s?new Date(s).toLocaleTimeString('en-US',{...AZ,hour:'numeric',minute:'2-digit'}):'—';
-const dt=s=>s?new Date(s).toLocaleString('en-US',{...AZ,weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'—';
-const ago=s=>{if(!s)return'never';const m=Math.round((Date.now()-new Date(s))/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.floor(m/60)+' h '+(m%60)+' min ago':Math.floor(m/1440)+' days ago'};
-const am=v=>v==null?'—':(v>0?'+':'')+Math.round(v);
-const dec=a=>a>0?1+a/100:1+100/-a;
-const mins=s=>s==null?'':(s<3600?Math.round(s/60)+' min':Math.floor(s/3600)+' h '+Math.round(s%3600/60)+' min');
-const STATE={idle:'Online, nothing to price right now',working:'Pricing combinations',signed_out:'Logged out — waiting for login',wrong_account:'Paused: wrong account in window',geo_required:'Location pop-up keeps returning'};
-let D=null,tab='parlays';
-function macState(){if(!D||!D.updated_at)return{on:false,text:'No data yet'};const age=(Date.now()-new Date(D.updated_at))/60000;
- if(D.mac==='stopped')return{on:false,text:'JuneBot stopped · '+ago(D.updated_at),reason:'JuneBot was closed on the Mac at '+dt(D.updated_at)+'.'};
- if(age>6)return{on:false,text:'Mac offline · '+ago(D.updated_at),reason:'No update since '+dt(D.updated_at)+'. The Mac is likely asleep, shut down, off the internet, or JuneBot was closed. Prices below are from then.'};
- return{on:true,text:'Live · updated '+ago(D.updated_at)}}
-function card(r){const fire=r.category==='fire',good=r.category==='qualifies',cls=fire?'fire':good?'good':'low';
-return `<article class="card ${cls}"><div class="head"><span class="badge">${fire?'🔥 FIRE':good?'✅ SEND IT':'⚠️ NOT SENDABLE NOW'}</span><span class="mult">${r.ratio!=null?r.ratio.toFixed(2)+'×':'—'}<small>FanDuel's payout</small></span></div>
-<div class="game">${esc(r.game)} · ${esc(dt(r.start))} · ${esc(r.team)} line ${esc(r.line)}${r.alerted_at?' · sent '+esc(t(r.alerted_at)):''}</div>
-<div class="take"><b>TAKE THIS ON BET365</b><ol>${r.take.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></div>
-<div class="odds"><div class="box"><span>bet365</span><strong>${esc(am(r.bet365.odds))}</strong><small>${r.bet365.odds!=null?'$10 pays $'+Math.round(10*dec(r.bet365.odds)).toLocaleString():esc(r.bet365.why)}</small></div><div class="box"><span>FanDuel</span><strong>${esc(am(r.fanduel.odds))}</strong><small>${r.fanduel.odds!=null?'$10 pays $'+Math.round(10*dec(r.fanduel.odds)).toLocaleString():esc(r.fanduel.why)}</small></div></div>
-<div class="facts"><div>Checked<strong>${esc(t(r.bet365.at))}</strong></div><div>Highest bet365<strong>${esc(am(r.high))}</strong>${r.high_at?esc(t(r.high_at)):''}</div><div>Steadiest<strong>${esc(am(r.steady))}</strong>${r.steady_secs!=null?'held '+esc(mins(r.steady_secs)):''}</div></div>
-${r.note?`<div class="game">${esc(r.note)}</div>`:''}</article>`}
-function render(){const m=macState();const L=document.getElementById('live');L.className='live '+(m.on?'on':'off');document.getElementById('liveText').textContent=m.text;
-document.querySelectorAll('nav button').forEach(b=>b.toggleAttribute('aria-current',b.dataset.t===tab));
-const main=document.getElementById('main');if(!D){return}
-const banner=m.on?'':`<div class="banner off"><strong>Mac offline.</strong> ${esc(m.reason||'')}</div>`;
-if(tab==='parlays'){const s=D.sendable||[];main.innerHTML=banner+`<h2>Send these now</h2>`+(s.length?`<div class="grid">${s.map(card).join('')}</div>`:`<div class="empty"><strong>Nothing to send right now</strong>${esc(D.counts.priced_both)} of ${esc(D.counts.combinations)} combinations have prices from both books. JuneBot posts here (and to Telegram) the moment bet365 pays 1.8× FanDuel or more.</div>`)+
- ((D.priced||[]).length?`<h2>Other priced combinations</h2><table><thead><tr><th>LEGS</th><th>BET365</th><th>FD</th><th>×</th></tr></thead><tbody>${D.priced.map(r=>`<tr><td>${esc(r.take.map(x=>x.split(' — ')[0].split(' ').slice(-1)[0]).join(' / '))}<br><small>${esc(r.game)}</small></td><td>${esc(am(r.bet365.odds))}</td><td>${esc(am(r.fanduel.odds))}</td><td>${esc(r.ratio?.toFixed(2))}</td></tr>`).join('')}</tbody></table>`:'')}
-if(tab==='lines'){main.innerHTML=banner+`<h2>Forward lines (${(D.lines||[]).length} teams)</h2><div class="grid">${(D.lines||[]).sort((a,b)=>a.team_name.localeCompare(b.team_name)).map(r=>`<div class="card team"><h3>${esc(r.team_name)}${r.kind&&r.kind!=='reported'?`<span class="tag">${esc(r.kind.toUpperCase())}</span>`:''}</h3>${r.lines.map((l,i)=>`<div class="ln"><span>L${i+1}</span>${l.map(esc).join(' · ')}</div>`).join('')}<div class="game">Posted ${esc(r.posted||'—')}</div></div>`).join('')||'<div class="empty"><strong>No complete lines yet</strong></div>'}</div>`}
-if(tab==='upcoming'){main.innerHTML=banner+`<h2>Upcoming games</h2><table><thead><tr><th>GAME</th><th>START (AZ)</th><th>LINES IN</th></tr></thead><tbody>${(D.upcoming||[]).map(g=>`<tr><td>${esc(g.game)}</td><td>${esc(dt(g.start))}</td><td>${g.lines.length?esc(g.lines.join(', ')):'<span class="mid">pending</span>'}</td></tr>`).join('')}</tbody></table>`}
-if(tab==='results'){const r=D.results||[];main.innerHTML=banner+`<h2>Tracked parlays</h2>`+(r.length?`<div class="grid">${r.map(x=>`<div class="card"><div class="head"><strong>${esc(x.game)}</strong><span class="${x.status==='stats_met'?'ok':x.status==='stats_not_met'?'bad':'mid'}">${esc({stats_met:'All legs hit',stats_not_met:'Missed',pregame:'Pregame',live:'Live',live_partial_data:'Live',needs_review:'Needs review'}[x.status]||x.status||'')}</span></div><div class="game">${esc(x.score||dt(x.start))}${x.odds?' · bet365 '+esc(am(x.odds)):''}</div>${(x.legs||[]).map(l=>`<div class="leg">${({reached:'✅',under_final:'✅',over_limit:'❌',not_reached_final:'❌'})[l.status]||'⏳'} ${esc(l.label)}${l.value!=null?' ('+esc(l.value)+')':''}</div>`).join('')}</div>`).join('')}</div>`:'<div class="empty"><strong>No tracked parlays yet</strong>Every alerted parlay is tracked here with live official stats.</div>')}
-if(tab==='alerts'){const a=D.alerts||[];main.innerHTML=banner+`<h2>Alerts sent</h2>`+(a.length?a.map(x=>`<div class="card" style="margin-bottom:12px"><div class="head"><strong>${x.category==='fire'?'🔥 ':''}${esc(x.ratio?.toFixed(2))}× · bet365 ${esc(am(x.bet365))} / FD ${esc(am(x.fanduel))}</strong><span class="game">${esc(dt(x.at))}</span></div><pre>${esc(x.text)}</pre></div>`).join(''):'<div class="empty"><strong>No alerts yet</strong></div>')}
-if(tab==='status'){const rel=D.relay||{};const book=b=>{const r=rel[b]||{};const fresh=r.last_seen&&(Date.now()-new Date(r.last_seen))<240000;return `<dt>${b==='bet365'?'bet365':'FanDuel'}</dt><dd class="${fresh&&r.state!=='signed_out'&&r.state!=='wrong_account'&&r.state!=='geo_required'?'ok':'mid'}">${esc(fresh?(STATE[r.state]||r.state):'Not connected')}${r.last_seen?' · '+esc(ago(r.last_seen)):''}</dd>`};
- const src=D.sources||{};const sname={gamedaytweets:'GameDayTweets lines',nhl_schedule:'NHL schedule',dailyfaceoff:'Daily Faceoff',fanduel_api:'FanDuel market check'};
- main.innerHTML=`<h2>Last updated</h2><div class="card"><dl class="kv"><dt>Mac</dt><dd class="${m.on?'ok':'bad'}">${esc(m.on?'Online':'Offline')}</dd><dt>Last update</dt><dd>${esc(dt(D.updated_at))} (${esc(ago(D.updated_at))})</dd>${m.reason?`<dt>Why</dt><dd>${esc(m.reason)}</dd>`:''}<dt>JuneBot running since</dt><dd>${esc(dt(D.started))}</dd>${book('bet365')}${book('fanduel')}${Object.entries(src).map(([k,v])=>`<dt>${esc(sname[k]||k)}</dt><dd class="${v.ok?'ok':'mid'}">${esc(v.ok?'OK':'Problem')} · ${esc(ago(v.at))}${v.ok?'':' — '+esc(v.detail)}</dd>`).join('')}</dl></div>
- <h2>Recent activity</h2><table><tbody>${(D.history||[]).map(h=>`<tr><td style="white-space:nowrap;color:#a1abc2">${esc(t(h.at))}</td><td>${esc(h.summary)}</td></tr>`).join('')}</tbody></table>`}}
-async function load(){try{const r=await fetch('https://api.github.com/gists/'+GIST,{cache:'no-store'});const g=await r.json();const f=g.files&&g.files['data.json'];if(!f)throw Error('no data');
- let c=f.content;if(f.truncated){c=await (await fetch(f.raw_url,{cache:'no-store'})).text()}D=JSON.parse(c)}catch(e){if(!D)document.getElementById('main').innerHTML='<div class="empty"><strong>Board unavailable</strong>Could not reach the data feed. Retrying every minute.</div>'}render()}
-document.getElementById('nav').onclick=e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.t;try{localStorage.setItem('jb-tab',tab)}catch{}render()};
-try{tab=localStorage.getItem('jb-tab')||tab}catch{}
-load();setInterval(load,120000);setInterval(render,20000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
-</script></body></html>
+<a class="skip" href="#main">Skip to content</a>
+<div class="ambient" aria-hidden="true"></div>
+<header class="header">
+  <a class="brand" href="#lineups" aria-label="JuneBot home"><span class="brand-mark" aria-hidden="true">J</span><span class="brand-name">JuneBot<span class="brand-sub">NHL WORKSPACE</span></span></a>
+  <nav aria-label="Main navigation">
+    <a href="#lineups" data-page="lineups" aria-current="page"><span aria-hidden="true">☷</span> Lines</a>
+    <a href="#parlays" data-page="parlays"><span aria-hidden="true">◈</span> Parlays <b class="nav-count hidden" id="navQual"></b></a>
+    <a href="#games" data-page="games"><span aria-hidden="true">◷</span> Upcoming</a>
+    <a href="#results" data-page="results"><span aria-hidden="true">✓</span> Results</a>
+    <a href="#history" data-page="history"><span aria-hidden="true">≡</span> History</a>
+    <a href="#sources" data-page="sources"><span aria-hidden="true">◉</span> Status</a>
+  </nav>
+  <span id="livePill" class="live-pill hidden"></span><button class="button refresh owner-only" id="refreshSources"><span aria-hidden="true">↻</span><span id="refreshLabel">Refresh</span></button>
+</header>
+<main id="main">
+  <div class="heading"><div><div class="eyebrow"><span class="status-dot" aria-hidden="true"></span> YOUR HOCKEY DESK</div><h1 id="pageTitle">Every line, in focus.</h1><p id="pageSubtitle">Complete forward-line reports, organized by team.</p></div><div class="timezone"><span>All times shown in</span><strong>Arizona · MST</strong></div></div>
+  <div class="stats"><div class="stat"><span>Forward-line reports</span><strong id="reportCount">—</strong><small>Complete team reports</small></div><div class="stat"><span>Combinations</span><strong id="comboCount">—</strong><small id="comboNote">6 per forward line</small></div><div class="stat"><span>Qualifying now</span><strong id="qualCount">—</strong><small id="qualNote">bet365 ≥ 1.8× FanDuel</small></div><div class="stat"><span>Last source check</span><strong class="time" id="checkTime">—</strong><small id="freshness">Waiting for data</small></div></div>
+  <p class="health hidden" id="health" role="status"></p>
+
+  <section id="lineupsPage" aria-label="Forward lines">
+    <div class="toolbar"><div class="field search-field"><span aria-hidden="true">⌕</span><input type="search" id="search" aria-label="Find a team or player" placeholder="Find a team or player…"></div><select id="lineupScope" aria-label="Filter forward-line reports"><option value="today">Playing today</option><option value="all">All teams</option></select><span class="result-count" id="lineupCount"></span></div>
+    <div id="updatesStrip" class="updates-strip hidden"></div>
+    <div id="lineupCards" class="lineup-grid"></div>
+  </section>
+
+  <section id="parlaysPage" class="hidden" aria-label="Parlays">
+    <div class="feed-banner" id="feedBanner"></div>
+    <h2 class="section-title">Confirmed · lines 1–2 · send these now</h2>
+    <div id="sendable" class="sendable-grid"></div>
+    <h2 class="section-title">Unconfirmed · lines 1–2 · bet365 priced, FanDuel not yet <small id="unconfirmedCount" class="small"></small></h2>
+    <div id="unconfirmed" class="sendable-grid"></div>
+    <h2 class="section-title">Lines 3–4 · crazy odds only <small id="depthCount" class="small"></small></h2>
+    <div id="depth" class="sendable-grid"></div>
+    <h2 class="section-title">All checked combinations</h2>
+    <div class="toolbar">
+      <div class="field search-field"><span aria-hidden="true">⌕</span><input type="search" id="parlaySearch" aria-label="Find a player or team" placeholder="Player or team…"></div>
+      <select id="parlayFilter" aria-label="Show"><option value="priced">Priced at both books</option><option value="qualifying">Qualifying (1.8×+)</option><option value="unconfirmed">Unconfirmed (bet365 only)</option><option value="top">Lines 1–2 only</option><option value="depth">Lines 3–4 only</option><option value="all">All combinations</option><option value="unavailable">Unavailable / missing</option></select>
+      <select id="parlayTotal" aria-label="Team total"><option value="all">U3.5 and U2.5</option><option value="3.5">Under 3.5 only</option><option value="2.5">Under 2.5 only</option></select>
+      <span class="result-count" id="parlayCount"></span>
+    </div>
+    <div id="parlayList" class="parlay-list"></div>
+  </section>
+
+  <section id="gamesPage" class="hidden" aria-label="Upcoming games">
+    <div class="toolbar"><select id="gameFilter" aria-label="Filter games"><option value="upcoming">Upcoming</option><option value="today">Today</option><option value="live">In progress</option><option value="final">Completed</option><option value="all">All logged games</option></select><span class="result-count" id="gameCount"></span><span class="toolbar-note">Select a game for official player statistics.</span></div><div id="gameCards" class="game-grid"></div>
+  </section>
+
+  <section id="resultsPage" class="hidden" aria-label="Results">
+    <div class="toolbar"><select id="resultFilter" aria-label="Filter tracked combinations"><option value="all">All tracked</option><option value="open">Pregame & live</option><option value="done">Finished</option></select><span class="result-count" id="resultCount"></span><span class="toolbar-note">Alerted combinations are tracked automatically. Uses official NHL stats, not sportsbook settlement.</span></div>
+    <div id="resultList" class="result-list"></div>
+  </section>
+
+  <section id="historyPage" class="hidden" aria-label="Scan history">
+    <div class="history-grid">
+      <article class="card pad"><h2>Source scans</h2><div id="scanList" class="log-list"></div></article>
+      <article class="card pad"><h2>New & updated reports</h2><div id="updateList" class="log-list"></div></article>
+      <article class="card pad"><h2>Sportsbook checks</h2><div id="quoteList" class="log-list"></div></article>
+      <article class="card pad"><h2>Telegram alerts</h2><div id="alertList" class="log-list"></div></article>
+    </div>
+  </section>
+
+  <section id="sourcesPage" class="hidden" aria-label="Data status">
+    <div class="source-grid" id="sourceGrid"></div>
+    <div class="settings-grid owner-only">
+      <article class="card help"><h2>Quote Relay setup</h2>
+        <p>Combined prices come from the <strong>JuneBot Quote Relay</strong> Chrome extension, which reads the actual bet slip in your own signed-in Chrome. Nothing is multiplied or modeled, and it never places a bet.</p>
+        <p>1. Chrome → <code>chrome://extensions</code> → Developer mode → <strong>Load unpacked</strong> → choose <code>Desktop/NHL/junebot-relay</code>.<br>2. Click the JuneBot extension icon, paste the relay key below, save.<br>3. Turn on <strong>Auto-price</strong> for bet365 and FanDuel. Each opens its own window; leave those windows open (not minimized).</p>
+        <div class="key-row"><button class="button" id="showKey">Show relay key</button><code id="relayKey" class="hidden"></code></div>
+        <p class="small">If a book page changes and prices stop arriving, open that book's worker window, click the extension and choose <strong>Send page snapshot</strong>; the snapshot is saved under <code>scanner/work/hockey/relay-debug</code> for recalibration.</p>
+      </article>
+      <article class="card help"><h2>Public live link</h2>
+        <p>A read-only copy of this board for anyone, from anywhere. It updates every 2 minutes while this Mac runs JuneBot, and shows <strong>Mac offline</strong> with the time of the last update when it doesn't. No settings, keys, balances or screenshots are shared.</p>
+        <div id="publicState" class="source-note" style="margin:0 0 12px;padding-top:0;border:0"></div>
+        <div id="publicConnect"><p class="small">One-time: <a href="https://github.com/settings/tokens/new?scopes=repo,gist&amp;description=JuneBot%20live%20board" target="_blank" rel="noopener">create a GitHub token ↗</a> (scopes <code>repo</code> and <code>gist</code> are pre-ticked; set expiration to “No expiration”), then paste it here.</p>
+        <div class="key-row"><input id="ghToken" type="password" placeholder="ghp_…" style="flex:1;min-width:200px;background:#111722;border:1px solid #363e52;border-radius:9px;color:var(--text);padding:10px 12px"><button class="button" id="ghSave">Connect</button></div><span class="small" id="ghMsg"></span></div>
+      </article>
+      <article class="card help"><h2>Alerts & settings</h2>
+        <label class="toggle"><span><strong>Telegram alerts</strong><small>Send qualifying combinations (1.8×+, 🔥 at 3×+).</small></span><input id="setAlerts" type="checkbox"></label>
+        <label class="toggle"><span><strong>FanDuel market check</strong><small>Public FanDuel data to confirm “lines not out yet”. Never used as a price.</small></span><input id="setFdApi" type="checkbox"></label>
+        <label class="toggle"><span><strong>Daily Faceoff backup</strong><small>Projected lines for teams without a GameDayTweets report.</small></span><input id="setDf" type="checkbox"></label>
+        <label class="toggle"><span><strong>Animated theme</strong><small>Slow fades between dark violet, blue, and teal.</small></span><input id="motionToggle" type="checkbox" checked></label>
+        <button class="button" id="tgTest">Send Telegram test</button> <span class="small" id="tgMsg"></span>
+        <div class="source-note" id="rulesNote"></div>
+      </article>
+    </div>
+  </section>
+  <footer><span class="footer-brand">JuneBot <span id="versionNote">· NHL workspace</span></span><span>Source-linked reports · Actual sportsbook bet-slip prices · Official NHL statistics · No bets placed</span></footer>
+</main>
+<dialog id="box" aria-labelledby="boxTitle"><div class="modal-header"><div><div class="eyebrow" id="boxEyebrow">OFFICIAL NHL BOX SCORE</div><h2 id="boxTitle">Game details</h2></div><button id="closeBox" class="button" aria-label="Close">Close ×</button></div><div id="boxBody"></div></dialog>
+</body></html>
