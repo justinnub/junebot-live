@@ -76,13 +76,24 @@ const mins=s=>{const m=Math.round(s/60);return m<60?m+' min':Math.floor(m/60)+' 
 function staleNote(b){if(!b||!b.observed_at)return '';const m=Math.floor((Date.now()-new Date(b.observed_at).getTime())/60000);if(m<30)return '';
 const t=m>=120?Math.floor(m/60)+' h '+(m%60)+' min':m+' min';return `<div class="stale-note">⏳ Not updated in ${esc(t)} · last bet365 price shown · JuneBot is re-checking it</div>`}
 // ------------------------------------------------------------- the board (tickets)
-const BOARD_TABS=[['top','⭐ Top picks'],['confirmed','✅ Confirmed'],['u35','Under 3.5'],['u25','💎 Under 2.5 · 30k+'],['deep','Lines 3–4']];
+const BOARD_TABS=[['top','⭐ Top picks'],['confirmed','✅ Confirmed'],['u35','Under 3.5'],['u25','💎 Under 2.5 · 30k+'],['deep','Lines 3–4'],['nfl','🏈 NFL']];
 let boardTab='top',boardGame='all';const openTickets=new Set();try{boardTab=localStorage.getItem('jb-tab')||'top';$('boardSort').value=localStorage.getItem('jb-sort')||'smart'}catch{}
 const isConf=r=>r.ratio!=null&&(r.category==='fire'||r.category==='qualifies');
 const onBoard=r=>new Date(r.event.start_time)>Date.now()&&(((isConf(r)||r.category==='unconfirmed')&&!r.under_min&&(!r.depth||r.crazy))||r.alerted_at);
-function boardSets(rows){const b=rows.filter(onBoard);return{top:b,confirmed:b.filter(isConf),u35:b.filter(r=>!r.depth&&r.total!==2.5),u25:b.filter(r=>!r.depth&&r.total===2.5),deep:b.filter(r=>r.depth)}}
+function boardSets(rows){const b=rows.filter(onBoard);const nfl=(parlays?.nfl||[]).filter(r=>new Date(r.event.start_time)>Date.now());return{top:b,confirmed:b.filter(isConf),u35:b.filter(r=>!r.depth&&r.total!==2.5),u25:b.filter(r=>!r.depth&&r.total===2.5),deep:b.filter(r=>r.depth),nfl}}
+function nflTicket(r){const b=r.books.bet365,f=r.books.fanduel;const conf=isConf(r),fire=r.category==='fire';
+ const state=fire?'<span class="tag t-fire">🔥 FIRE</span>':conf?'<span class="tag t-good">✅ CONFIRMED</span>':'<span class="tag t-unc">🟡 UNCONFIRMED</span>';
+ const legs=r.legs.map(l=>l.kind==='game_under'?`<li><span class="lg u">U</span><b>Game total</b><em>Under ${esc(l.line)} points</em></li>`:l.kind==='qb_pass'?`<li><span class="lg g">QB</span><b>${esc(l.player)}</b><em>${esc(l.yards)}+ passing yards</em></li>`:`<li><span class="lg a">RB</span><b>${esc(l.player)}</b><em>Under ${esc(l.line)} rushing yards</em></li>`).join('');
+ const fd=f.odds!=null?`<b>${esc(am(f.odds))}</b><small>${esc(ago(f.observed_at))}</small>`:`<b class="muted">—</b><small>${esc(STATUS[f.status]||f.status||'not checked')}</small>`;
+ const edge=r.edge&&r.edge.score!=null?`<p class="small">${r.best_leg?'⭐ <b>Best 3rd leg</b> · ':''}📊 ${esc(r.edge.why)} · score ${esc(r.edge.score)}/100 · use with a bet365 profit boost</p>`:'';
+ return `<article class="ticket ${fire?'fire':conf?'good':'unc'}" data-id="${esc(r.id)}">
+<div class="t-top"><div class="t-tags"><span class="tag">🏈 ${esc(r.kind==='2-leg'?'2 LEGS':'3 LEGS · BOOST')}</span>${state}${r.sent?'<span class="tag t-sent">SENT</span>':''}</div>
+<div class="t-odds">${esc(am(b.odds))}<small>$10 → ${b.odds!=null?pays(b.odds):'—'}</small></div></div>
+<div class="t-game">${esc(r.event.away_name||r.event.away)} @ ${esc(r.event.home_name||r.event.home)} · ${esc(dayTime(r.event.start_time))}</div>
+<ol class="t-legs">${legs}</ol>${edge}
+<div class="t-books"><div class="tb b365"><span>bet365</span><b>${esc(am(b.odds))}</b><small>checked ${esc(ago(b.observed_at))}</small></div><div class="tb fd"><span>FanDuel</span>${fd}</div>${r.ratio!=null?`<div class="tb mult ${fire?'fire':conf?'good':'low'}"><span>vs FanDuel</span><b>${esc(r.ratio.toFixed(2))}×</b><small>payout</small></div>`:''}</div></article>`}
 const gameKey=r=>r.event.id;const gameLabel=r=>`${r.event.away} @ ${r.event.home}`;
-function sortBoard(list){const mode=$('boardSort').value;const odds=r=>r.books.bet365.odds||0;const cat=r=>r.category==='fire'?0:r.category==='qualifies'?1:2;
+function sortBoard(list){if(boardTab==='nfl'){const cat=r=>r.category==='fire'?0:r.category==='qualifies'?1:2;return list.slice().sort((a,b)=>cat(a)-cat(b)||(b.ratio||0)-(a.ratio||0)||(b.books.bet365.odds||0)-(a.books.bet365.odds||0))}const mode=$('boardSort').value;const odds=r=>r.books.bet365.odds||0;const cat=r=>r.category==='fire'?0:r.category==='qualifies'?1:2;
  return list.slice().sort(mode==='odds'?(a,b)=>odds(b)-odds(a):mode==='time'?(a,b)=>new Date(a.event.start_time)-new Date(b.event.start_time)||(a.line!==1)-(b.line!==1)||odds(b)-odds(a):(a,b)=>cat(a)-cat(b)||(a.line!==1)-(b.line!==1)||odds(b)-odds(a))}
 const dayTime=s=>{const d=new Date(s),t=new Date();const same=d.toLocaleDateString('en-CA',AZ)===t.toLocaleDateString('en-CA',AZ);const tm=new Date(t.getTime()+864e5);const tom=d.toLocaleDateString('en-CA',AZ)===tm.toLocaleDateString('en-CA',AZ);
  return (same?'Today ':tom?'Tomorrow ':d.toLocaleDateString('en-US',{...AZ,weekday:'short'})+' ')+time(s)};
@@ -107,9 +118,9 @@ function renderBoard(){const rows=parlays?.rows||[];const sets=boardSets(rows);i
  if(boardGame!=='all'&&!games.has(boardGame))boardGame='all';
  $('gameChips').innerHTML=`<button class="gchip${boardGame==='all'?' on':''}" data-gchip="all">All games <b>${list.length}</b></button>`+[...games.entries()].sort((a,b)=>new Date(a[1].r.event.start_time)-new Date(b[1].r.event.start_time)).map(([k,g])=>`<button class="gchip${boardGame===k?' on':''}" data-gchip="${esc(k)}">${esc(gameLabel(g.r))} <small>${esc(time(g.r.event.start_time))}</small><b>${g.n}</b></button>`).join('');
  const shown=sortBoard(list.filter(r=>boardGame==='all'||gameKey(r)===boardGame));
- const hints={top:'Everything worth a look: confirmed first, then line 1, then the best bet365 odds. Under 3.5 from +8,000 · Under 2.5 from +30,000.',confirmed:`bet365 pays at least ${data?.rules?.minimum_payout_ratio??1.8}× FanDuel on the same four legs. These also go to Telegram / your group.`,u35:'Under 3.5 parlays at bet365 +8,000 and up (lines 1–2).',u25:'Under 2.5 parlays only when bet365 pays +30,000 or more (lines 1–2).',deep:'Lines 3–4 only with crazy odds: 3× FanDuel, or bet365 +25,000 before FanDuel posts.'};
+ const hints={top:'Everything worth a look: confirmed first, then line 1, then the best bet365 odds. Under 3.5 from +8,000 · Under 2.5 from +30,000.',confirmed:`bet365 pays at least ${data?.rules?.minimum_payout_ratio??1.8}× FanDuel on the same four legs. These also go to Telegram / your group.`,u35:'Under 3.5 parlays at bet365 +8,000 and up (lines 1–2).',u25:'Under 2.5 parlays only when bet365 pays +30,000 or more (lines 1–2).',deep:'Lines 3–4 only with crazy odds: 3× FanDuel, or bet365 +25,000 before FanDuel posts.',nfl:'NFL: game Under + QB alt passing yards (plus-money steps only), and 3-leg versions with a same-team rushing Under for bet365 profit boosts. Confirmed = bet365 pays 1.8× FanDuel or more.'};
  $('boardHint').textContent=hints[boardTab];
- $('boardGrid').innerHTML=shown.map(ticket).join('')||empty(boardTab==='confirmed'?'Nothing confirmed right now':'Nothing here yet','bet365 is pricing every forward line; parlays appear here as soon as they clear the odds floors. Prices are re-checked about every 10 minutes.');
+ $('boardGrid').innerHTML=shown.map(boardTab==='nfl'?nflTicket:ticket).join('')||empty(boardTab==='confirmed'?'Nothing confirmed right now':'Nothing here yet','bet365 is pricing every forward line; parlays appear here as soon as they clear the odds floors. Prices are re-checked about every 10 minutes.');
  const n=sets.top.length;$('navQual').textContent=n||'';$('navQual').classList.toggle('hidden',!n)}
 // ------------------------------------------------------------- NEW LINES POSTED banner
 let linesSeen=null;try{linesSeen=localStorage.getItem('jb-lines-seen')}catch{}
