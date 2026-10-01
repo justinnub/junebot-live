@@ -70,6 +70,9 @@ const takeLines=r=>r.legs.map(l=>l.kind==='team_under'?`${TEAMN[l.team]||l.team}
 const dec=a=>a>0?1+a/100:1+100/-a;
 const pays=a=>'$'+Math.round(10*dec(a)).toLocaleString();
 const mins=s=>{const m=Math.round(s/60);return m<60?m+' min':Math.floor(m/60)+' h '+(m%60)+' min'};
+// Older prices stay on the board, clearly marked, while JuneBot keeps re-pricing them.
+function staleNote(b){if(!b||!b.observed_at)return '';const m=Math.floor((Date.now()-new Date(b.observed_at).getTime())/60000);if(m<30)return '';
+const t=m>=120?Math.floor(m/60)+' h '+(m%60)+' min':m+' min';return `<div class="stale-note">⏳ Not updated in ${esc(t)} · last bet365 price shown · JuneBot is re-checking it</div>`}
 function sendCard(r){const b=r.books.bet365,f=r.books.fanduel,st=r.stats||{},s3=st.bet365;const fire=r.category==='fire';const live=r.ratio!=null&&(r.category==='fire'||r.category==='qualifies');
 const unc=r.category==='unconfirmed';const cf=r.confidence||{};
 const badge=live?`<span class="send-badge ${fire?'fire':'good'}">${fire?'🔥 FIRE':'✅ SEND IT'}</span>`:unc?`<span class="send-badge unc">🟡 UNCONFIRMED · bet365 only</span>`:`<span class="send-badge low">⚠️ NOT SENDABLE NOW</span>`;
@@ -78,7 +81,7 @@ const next=b.observed_at?new Date(new Date(b.observed_at).getTime()+300000):null
 return `<article class="card send-card ${live?(fire?'fire':'good'):unc?'unc':'low'}"><div class="send-head">${badge}<span class="send-mult">${r.ratio!=null?r.ratio.toFixed(2)+'×':unc?esc(am(b.odds)):'—'}<small>${unc?'bet365 price · FanDuel pending':'FanDuel\'s payout'}</small></span></div>
 <div class="send-game">${esc(r.event.away)} @ ${esc(r.event.home)} · ${esc(fmt(r.event.start_time))} · ${esc(r.team)} line ${esc(r.line)}${r.line===1?' <span class="depth-tag line1">⭐ LINE 1</span>':''}${r.depth?' <span class="depth-tag">LINE '+esc(r.line)+'</span>':''}${r.alerted_at?` · <span class="sent">Sent to Telegram ${esc(time(r.alerted_at))}</span>`:''}</div>
 ${conf}<div class="take"><div class="take-title">TAKE THIS ON BET365</div><ol>${takeLines(r).map(t=>`<li>${esc(t)}</li>`).join('')}</ol></div>
-<div class="odds-row"><div class="big b365"><span>bet365</span><strong>${esc(am(b.odds))}</strong><small>${b.odds!=null?'$10 pays '+pays(b.odds):esc(STATUS[b.status]||'')}</small></div><div class="big fd"><span>FanDuel</span><strong>${esc(am(f.odds))}</strong><small>${f.odds!=null?'$10 pays '+pays(f.odds):esc(STATUS[f.status]||'')}</small></div></div>
+${staleNote(b)}<div class="odds-row"><div class="big b365"><span>bet365</span><strong>${esc(am(b.odds))}</strong><small>${b.odds!=null?'$10 pays '+pays(b.odds):esc(STATUS[b.status]||'')}</small></div><div class="big fd"><span>FanDuel</span><strong>${esc(am(f.odds))}</strong><small>${f.odds!=null?'$10 pays '+pays(f.odds):esc(STATUS[f.status]||'')}</small></div></div>
 <div class="facts"><div><span>Last checked</span><strong>${esc(time(b.observed_at))}</strong><small>${next?'next ≈ '+esc(time(next)):''}</small></div><div><span>Highest bet365</span><strong>${s3?esc(am(s3.high)):'—'}</strong><small>${s3?'at '+esc(time(s3.high_at)):''}</small></div><div><span>Steadiest bet365</span><strong>${s3?esc(am(s3.steadiest.odds)):'—'}</strong><small>${s3?'held '+esc(mins(s3.steadiest.seconds)):''}</small></div></div>
 <div class="send-foot">${b.screenshot&&!PUB?`<a href="/api/hockey/shot/${esc(b.screenshot)}" target="_blank" rel="noopener"><img class="thumb" src="/api/hockey/shot/${esc(b.screenshot)}" alt="bet365 bet slip screenshot"></a>`:'<span></span>'}<button class="button" data-history="${esc(r.id)}">Price history</button></div></article>`}
 function renderSendable(){const pre=r=>new Date(r.event.start_time)>Date.now();
