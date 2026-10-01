@@ -76,21 +76,21 @@ const badge=live?`<span class="send-badge ${fire?'fire':'good'}">${fire?'🔥 FI
 const conf=cf.level?`<div class="conf conf-${esc(cf.level.toLowerCase())}" title="${esc((cf.reasons||[]).join(' · '))}"><strong>${esc(cf.level)} confidence · ${esc(cf.score)}</strong><span>${esc((cf.reasons||[]).join(' · '))}</span></div>`:'';
 const next=b.observed_at?new Date(new Date(b.observed_at).getTime()+300000):null;
 return `<article class="card send-card ${live?(fire?'fire':'good'):unc?'unc':'low'}"><div class="send-head">${badge}<span class="send-mult">${r.ratio!=null?r.ratio.toFixed(2)+'×':unc?esc(am(b.odds)):'—'}<small>${unc?'bet365 price · FanDuel pending':'FanDuel\'s payout'}</small></span></div>
-<div class="send-game">${esc(r.event.away)} @ ${esc(r.event.home)} · ${esc(fmt(r.event.start_time))} · ${esc(r.team)} line ${esc(r.line)}${r.depth?' <span class="depth-tag">LINE '+esc(r.line)+'</span>':''}${r.alerted_at?` · <span class="sent">Sent to Telegram ${esc(time(r.alerted_at))}</span>`:''}</div>
+<div class="send-game">${esc(r.event.away)} @ ${esc(r.event.home)} · ${esc(fmt(r.event.start_time))} · ${esc(r.team)} line ${esc(r.line)}${r.line===1?' <span class="depth-tag line1">⭐ LINE 1</span>':''}${r.depth?' <span class="depth-tag">LINE '+esc(r.line)+'</span>':''}${r.alerted_at?` · <span class="sent">Sent to Telegram ${esc(time(r.alerted_at))}</span>`:''}</div>
 ${conf}<div class="take"><div class="take-title">TAKE THIS ON BET365</div><ol>${takeLines(r).map(t=>`<li>${esc(t)}</li>`).join('')}</ol></div>
 <div class="odds-row"><div class="big b365"><span>bet365</span><strong>${esc(am(b.odds))}</strong><small>${b.odds!=null?'$10 pays '+pays(b.odds):esc(STATUS[b.status]||'')}</small></div><div class="big fd"><span>FanDuel</span><strong>${esc(am(f.odds))}</strong><small>${f.odds!=null?'$10 pays '+pays(f.odds):esc(STATUS[f.status]||'')}</small></div></div>
 <div class="facts"><div><span>Last checked</span><strong>${esc(time(b.observed_at))}</strong><small>${next?'next ≈ '+esc(time(next)):''}</small></div><div><span>Highest bet365</span><strong>${s3?esc(am(s3.high)):'—'}</strong><small>${s3?'at '+esc(time(s3.high_at)):''}</small></div><div><span>Steadiest bet365</span><strong>${s3?esc(am(s3.steadiest.odds)):'—'}</strong><small>${s3?'held '+esc(mins(s3.steadiest.seconds)):''}</small></div></div>
 <div class="send-foot">${b.screenshot&&!PUB?`<a href="/api/hockey/shot/${esc(b.screenshot)}" target="_blank" rel="noopener"><img class="thumb" src="/api/hockey/shot/${esc(b.screenshot)}" alt="bet365 bet slip screenshot"></a>`:'<span></span>'}<button class="button" data-history="${esc(r.id)}">Price history</button></div></article>`}
 function renderSendable(){const pre=r=>new Date(r.event.start_time)>Date.now();
 const all=(parlays?.rows||[]).filter(pre);
-const deep=all.filter(r=>r.depth&&(r.crazy||r.alerted_at)).sort((a,b)=>(b.ratio||0)-(a.ratio||0)||(b.books.bet365.odds||0)-(a.books.bet365.odds||0));
+const deep=all.filter(r=>r.depth&&((r.crazy&&!r.under_min)||r.alerted_at)).sort((a,b)=>(b.ratio||0)-(a.ratio||0)||(b.books.bet365.odds||0)-(a.books.bet365.odds||0));
 $('depthCount').textContent=deep.length?`${deep.length} with crazy odds`:'';
 $('depth').innerHTML=deep.map(sendCard).join('')||empty('Nothing crazy on lines 3–4','Lines 3–4 show here only at 3× FanDuel or more, or bet365 +25,000 and up before FanDuel posts.');
-const rows=all.filter(r=>!r.depth&&(r.category==='fire'||r.category==='qualifies'||r.alerted_at));
-rows.sort((a,b)=>(b.category==='fire')-(a.category==='fire')||(b.ratio||0)-(a.ratio||0));
+const rows=all.filter(r=>!r.depth&&(((r.category==='fire'||r.category==='qualifies')&&!r.under_min)||r.alerted_at));
+rows.sort((a,b)=>(b.category==='fire')-(a.category==='fire')||(a.line!==1)-(b.line!==1)||(b.ratio||0)-(a.ratio||0));
 $('sendable').innerHTML=rows.map(sendCard).join('')||empty('Nothing confirmed right now',`Confirmed = bet365 pays at least ${data?.rules?.minimum_payout_ratio??1.8}× FanDuel on the same four legs. JuneBot also sends these to Telegram.`);
-const unc=all.filter(r=>!r.depth&&r.category==='unconfirmed').sort((a,b)=>(b.books.bet365.odds||0)-(a.books.bet365.odds||0)).slice(0,30);
-$('unconfirmedCount').textContent=unc.length?`${unc.length} parlay${unc.length===1?'':'s'}, best bet365 odds first`:'';
+const unc=all.filter(r=>!r.depth&&r.category==='unconfirmed'&&!r.under_min).sort((a,b)=>(a.line!==1)-(b.line!==1)||(b.books.bet365.odds||0)-(a.books.bet365.odds||0)).slice(0,40);
+$('unconfirmedCount').textContent=unc.length?`${unc.length} parlay${unc.length===1?'':'s'} · line 1 first, then best bet365 odds · U2.5 only at +30,000+ (line 1 always)`:'';
 $('unconfirmed').innerHTML=unc.map(sendCard).join('')||empty('No unconfirmed parlays yet','These appear as soon as bet365 prices a combination, before FanDuel posts its lines.')}
 async function showHistory(id){const r=(parlays?.rows||[]).find(x=>x.id===id);const request=++boxRequest;$('boxEyebrow').textContent='PRICE HISTORY · ACTUAL BET-SLIP QUOTES';$('boxTitle').textContent=r?takeLines(r).slice(0,3).map(t=>t.split(' — ')[0].split(' ').slice(-1)[0]).join(' / ')+` · ${r.team} U${r.total}`:'Price history';$('boxBody').textContent='Loading…';$('box').showModal();
 try{const h=await get('/combo/'+id);if(request!==boxRequest)return;const st=h.stats,s3=st.bet365,sf=st.fanduel,best=st.best_ratio;
