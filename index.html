@@ -19,6 +19,7 @@
     <a href="#games" data-page="games"><span aria-hidden="true">◷</span> Upcoming</a>
     <a href="#results" data-page="results"><span aria-hidden="true">✓</span> Results</a>
     <a href="#history" data-page="history"><span aria-hidden="true">≡</span> History</a>
+    <a href="#texts" data-page="texts" class="owner-only"><span aria-hidden="true">✉</span> Texts</a>
     <a href="#sources" data-page="sources"><span aria-hidden="true">◉</span> Status</a>
   </nav>
   <span id="livePill" class="live-pill hidden"></span><button class="button refresh owner-only" id="refreshSources"><span aria-hidden="true">↻</span><span id="refreshLabel">Refresh</span></button>
@@ -74,6 +75,20 @@
     </div>
   </section>
 
+  <section id="textsPage" class="hidden owner-only" aria-label="Who gets the texts">
+    <p class="board-hint">Only you see this page (it is never on the public link). Everyone switched on here gets JuneBot's picks as texts from this Mac's Messages app. Texts go out for <strong>today's games</strong> only: Under 3.5 at bet365 +10,000+, Under 2.5 at +50,000+.</p>
+    <div class="recip-add">
+      <article class="card pad"><h2>Add a person</h2>
+        <div class="key-row"><input id="rName" placeholder="Name (e.g. Mikey)" class="txt"><input id="rHandle" placeholder="Phone number or iMessage email" class="txt" inputmode="tel"><button class="button" id="rAdd">Add</button></div>
+        <p class="small">Phone numbers get iMessage. Green-bubble (Android) numbers only work if your iPhone has Settings → Messages → Text Message Forwarding turned on for this Mac.</p></article>
+      <article class="card pad"><h2>Add a group chat</h2>
+        <div class="key-row"><button class="button" id="gFind">Find my group chats</button><select id="gChats" class="hidden" style="flex:1;min-width:200px" aria-label="Group chat"></select><button class="button hidden" id="gAdd">Add group</button></div>
+        <p class="small">The group must exist in Messages on this Mac. The first time, macOS asks to let Terminal control Messages — click OK.</p></article>
+    </div>
+    <p class="small" id="rMsg" role="status"></p>
+    <div id="recipList" class="recip-list"></div>
+  </section>
+
   <section id="sourcesPage" class="hidden" aria-label="Data status">
     <div class="source-grid" id="sourceGrid"></div>
     <div class="settings-grid owner-only">
@@ -88,17 +103,6 @@
         <div id="publicState" class="source-note" style="margin:0 0 12px;padding-top:0;border:0"></div>
         <div id="publicConnect"><p class="small">One-time: <a href="https://github.com/settings/tokens/new?scopes=repo,gist&amp;description=JuneBot%20live%20board" target="_blank" rel="noopener">create a GitHub token ↗</a> (scopes <code>repo</code> and <code>gist</code> are pre-ticked; set expiration to “No expiration”), then paste it here.</p>
         <div class="key-row"><input id="ghToken" type="password" placeholder="ghp_…" style="flex:1;min-width:200px;background:#111722;border:1px solid #363e52;border-radius:9px;color:var(--text);padding:10px 12px"><button class="button" id="ghSave">Connect</button></div><span class="small" id="ghMsg"></span></div>
-      </article>
-      <article class="card help"><h2>iMessage group chat</h2>
-        <p>JuneBot texts your group from this Mac's Messages app. The first time, macOS asks to let Terminal control Messages — click <strong>OK</strong>.</p>
-        <div id="imState" class="source-note" style="margin:0 0 12px;padding-top:0;border:0"></div>
-        <div class="key-row"><button class="button" id="imFind">Find my group chats</button><select id="imChats" class="hidden" aria-label="Group chat" style="flex:1;min-width:200px"></select><button class="button hidden" id="imSave">Use this chat</button></div>
-        <label class="toggle"><span><strong>Text the group</strong><small>Master switch for iMessage.</small></span><input id="imEnabled" type="checkbox"></label>
-        <label class="toggle"><span><strong>New lines posted</strong><small>Each new forward-line post for games in the next 30 hours.</small></span><input id="imLines" type="checkbox"></label>
-        <label class="toggle"><span><strong>New on the board</strong><small>bet365-priced parlays above the odds floors (FanDuel not posted yet).</small></span><input id="imBoard" type="checkbox"></label>
-        <label class="toggle"><span><strong>Confirmed parlays</strong><small>1.8×+ FanDuel, with the bet365 screenshot.</small></span><input id="imParlays" type="checkbox"></label>
-        <label class="toggle"><span><strong>5-minute price updates</strong><small>Can be chatty for a group — off by default.</small></span><input id="imUpdates" type="checkbox"></label>
-        <button class="button" id="imTest">Send test to group</button> <span class="small" id="imMsg"></span>
       </article>
       <article class="card help"><h2>Alerts & settings</h2>
         <label class="toggle"><span><strong>Telegram alerts</strong><small>Send qualifying combinations (1.8×+, 🔥 at 3×+).</small></span><input id="setAlerts" type="checkbox"></label>
