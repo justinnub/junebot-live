@@ -60,3 +60,5 @@ tr.hi td{background:#2c2440}.m-fire{color:#ffb38a;font-weight:650}.m-good{color:
 .depth-tag{font-size:10px;font-weight:700;letter-spacing:.6px;border:1px solid #5a5330;color:#f6e7a8;border-radius:5px;padding:1px 6px;margin-left:4px}
 
 .depth-tag.line1{background:rgba(250,204,21,.16);color:#fde68a;border-color:rgba(250,204,21,.4)}
+
+.stale-note{margin:10px 0 0;padding:8px 12px;border-radius:9px;background:rgba(251,146,60,.12);border:1px solid rgba(251,146,60,.45);color:#fdba74;font-size:13px;font-weight:600}
