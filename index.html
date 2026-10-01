@@ -10,11 +10,12 @@
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <div class="ambient" aria-hidden="true"></div>
+<div id="linesToast" class="lines-toast hidden" role="status" aria-live="polite"><span class="lt-icon" aria-hidden="true">🆕</span><div class="lt-text"><strong>NEW LINES POSTED</strong><span id="linesToastTeams"></span></div><button class="lt-view" id="linesToastView">View lines</button><button class="lt-bell" id="linesToastBell" title="Pop-up alerts on this device">🔔</button><button class="lt-close" id="linesToastClose" aria-label="Dismiss">×</button></div>
 <header class="header">
-  <a class="brand" href="#lineups" aria-label="JuneBot home"><span class="brand-mark" aria-hidden="true">J</span><span class="brand-name">JuneBot<span class="brand-sub">NHL WORKSPACE</span></span></a>
+  <a class="brand" href="#parlays" aria-label="JuneBot home"><span class="brand-mark" aria-hidden="true">J</span><span class="brand-name">JuneBot<span class="brand-sub">NHL WORKSPACE</span></span></a>
   <nav aria-label="Main navigation">
-    <a href="#lineups" data-page="lineups" aria-current="page"><span aria-hidden="true">☷</span> Lines</a>
     <a href="#parlays" data-page="parlays"><span aria-hidden="true">◈</span> Parlays <b class="nav-count hidden" id="navQual"></b></a>
+    <a href="#lineups" data-page="lineups"><span aria-hidden="true">☷</span> Lines <b class="nav-count new hidden" id="navLines">NEW</b></a>
     <a href="#games" data-page="games"><span aria-hidden="true">◷</span> Upcoming</a>
     <a href="#results" data-page="results"><span aria-hidden="true">✓</span> Results</a>
     <a href="#history" data-page="history"><span aria-hidden="true">≡</span> History</a>
@@ -24,7 +25,7 @@
 </header>
 <main id="main">
   <div class="heading"><div><div class="eyebrow"><span class="status-dot" aria-hidden="true"></span> YOUR HOCKEY DESK</div><h1 id="pageTitle">Every line, in focus.</h1><p id="pageSubtitle">Complete forward-line reports, organized by team.</p></div><div class="timezone"><span>All times shown in</span><strong>Arizona · MST</strong></div></div>
-  <div class="stats"><div class="stat"><span>Forward-line reports</span><strong id="reportCount">—</strong><small>Complete team reports</small></div><div class="stat"><span>Combinations</span><strong id="comboCount">—</strong><small id="comboNote">6 per forward line</small></div><div class="stat"><span>Qualifying now</span><strong id="qualCount">—</strong><small id="qualNote">bet365 ≥ 1.8× FanDuel</small></div><div class="stat"><span>Last source check</span><strong class="time" id="checkTime">—</strong><small id="freshness">Waiting for data</small></div></div>
+  <div class="stats"><div class="stat"><span>Forward-line reports</span><strong id="reportCount">—</strong><small>Complete team reports</small></div><div class="stat"><span>Combinations</span><strong id="comboCount">—</strong><small id="comboNote">6 per forward line</small></div><div class="stat"><span>On the board</span><strong id="qualCount">—</strong><small id="qualNote">confirmed + unconfirmed</small></div><div class="stat"><span>Last source check</span><strong class="time" id="checkTime">—</strong><small id="freshness">Waiting for data</small></div></div>
   <p class="health hidden" id="health" role="status"></p>
 
   <section id="lineupsPage" aria-label="Forward lines">
@@ -35,22 +36,24 @@
 
   <section id="parlaysPage" class="hidden" aria-label="Parlays">
     <div class="feed-banner" id="feedBanner"></div>
-    <h2 class="section-title">Confirmed · lines 1–2 · Under 3.5 · send these now</h2>
-    <div id="sendable" class="sendable-grid"></div>
-    <h2 class="section-title">Unconfirmed · lines 1–2 · Under 3.5 · bet365 priced, FanDuel not yet <small id="unconfirmedCount" class="small"></small></h2>
-    <div id="unconfirmed" class="sendable-grid"></div>
-    <h2 class="section-title">Under 2.5 · bet365 +30,000 and up <small id="u25Count" class="small"></small></h2>
-    <div id="u25" class="sendable-grid"></div>
-    <h2 class="section-title">Lines 3–4 · crazy odds only <small id="depthCount" class="small"></small></h2>
-    <div id="depth" class="sendable-grid"></div>
-    <h2 class="section-title">All checked combinations</h2>
-    <div class="toolbar">
-      <div class="field search-field"><span aria-hidden="true">⌕</span><input type="search" id="parlaySearch" aria-label="Find a player or team" placeholder="Player or team…"></div>
-      <select id="parlayFilter" aria-label="Show"><option value="priced">Priced at both books</option><option value="qualifying">Qualifying (1.8×+)</option><option value="unconfirmed">Unconfirmed (bet365 only)</option><option value="top">Lines 1–2 only</option><option value="depth">Lines 3–4 only</option><option value="all">All combinations</option><option value="unavailable">Unavailable / missing</option></select>
-      <select id="parlayTotal" aria-label="Team total"><option value="all">U3.5 and U2.5</option><option value="3.5">Under 3.5 only</option><option value="2.5">Under 2.5 only</option></select>
-      <span class="result-count" id="parlayCount"></span>
+    <div class="board-bar" id="boardBar">
+      <div class="seg" id="boardTabs" role="tablist" aria-label="Parlay boards"></div>
+      <div class="board-tools">
+        <div class="game-chips" id="gameChips" aria-label="Filter by game"></div>
+        <label class="sort-pick"><span>Sort</span><select id="boardSort" aria-label="Sort parlays"><option value="smart">Best first (confirmed · line 1 · odds)</option><option value="odds">Highest odds</option><option value="time">Game time</option></select></label>
+      </div>
     </div>
-    <div id="parlayList" class="parlay-list"></div>
+    <p class="board-hint" id="boardHint"></p>
+    <div id="boardGrid" class="ticket-grid"></div>
+    <details class="all-combos" id="allCombos">
+      <summary><span>Every combination</span><small id="parlayCount"></small></summary>
+      <div class="toolbar">
+        <div class="field search-field"><span aria-hidden="true">⌕</span><input type="search" id="parlaySearch" aria-label="Find a player or team" placeholder="Player or team…"></div>
+        <select id="parlayFilter" aria-label="Show"><option value="priced">Priced at both books</option><option value="qualifying">Qualifying (1.8×+)</option><option value="unconfirmed">Unconfirmed (bet365 only)</option><option value="top">Lines 1–2 only</option><option value="depth">Lines 3–4 only</option><option value="all" selected>All combinations</option><option value="unavailable">Unavailable / missing</option></select>
+        <select id="parlayTotal" aria-label="Team total"><option value="all">U3.5 and U2.5</option><option value="3.5">Under 3.5 only</option><option value="2.5">Under 2.5 only</option></select>
+      </div>
+      <div id="parlayList" class="parlay-list"></div>
+    </details>
   </section>
 
   <section id="gamesPage" class="hidden" aria-label="Upcoming games">
@@ -85,6 +88,17 @@
         <div id="publicState" class="source-note" style="margin:0 0 12px;padding-top:0;border:0"></div>
         <div id="publicConnect"><p class="small">One-time: <a href="https://github.com/settings/tokens/new?scopes=repo,gist&amp;description=JuneBot%20live%20board" target="_blank" rel="noopener">create a GitHub token ↗</a> (scopes <code>repo</code> and <code>gist</code> are pre-ticked; set expiration to “No expiration”), then paste it here.</p>
         <div class="key-row"><input id="ghToken" type="password" placeholder="ghp_…" style="flex:1;min-width:200px;background:#111722;border:1px solid #363e52;border-radius:9px;color:var(--text);padding:10px 12px"><button class="button" id="ghSave">Connect</button></div><span class="small" id="ghMsg"></span></div>
+      </article>
+      <article class="card help"><h2>iMessage group chat</h2>
+        <p>JuneBot texts your group from this Mac's Messages app. The first time, macOS asks to let Terminal control Messages — click <strong>OK</strong>.</p>
+        <div id="imState" class="source-note" style="margin:0 0 12px;padding-top:0;border:0"></div>
+        <div class="key-row"><button class="button" id="imFind">Find my group chats</button><select id="imChats" class="hidden" aria-label="Group chat" style="flex:1;min-width:200px"></select><button class="button hidden" id="imSave">Use this chat</button></div>
+        <label class="toggle"><span><strong>Text the group</strong><small>Master switch for iMessage.</small></span><input id="imEnabled" type="checkbox"></label>
+        <label class="toggle"><span><strong>New lines posted</strong><small>Each new forward-line post for games in the next 30 hours.</small></span><input id="imLines" type="checkbox"></label>
+        <label class="toggle"><span><strong>New on the board</strong><small>bet365-priced parlays above the odds floors (FanDuel not posted yet).</small></span><input id="imBoard" type="checkbox"></label>
+        <label class="toggle"><span><strong>Confirmed parlays</strong><small>1.8×+ FanDuel, with the bet365 screenshot.</small></span><input id="imParlays" type="checkbox"></label>
+        <label class="toggle"><span><strong>5-minute price updates</strong><small>Can be chatty for a group — off by default.</small></span><input id="imUpdates" type="checkbox"></label>
+        <button class="button" id="imTest">Send test to group</button> <span class="small" id="imMsg"></span>
       </article>
       <article class="card help"><h2>Alerts & settings</h2>
         <label class="toggle"><span><strong>Telegram alerts</strong><small>Send qualifying combinations (1.8×+, 🔥 at 3×+).</small></span><input id="setAlerts" type="checkbox"></label>
