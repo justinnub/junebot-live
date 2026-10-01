@@ -86,12 +86,15 @@ const all=(parlays?.rows||[]).filter(pre);
 const deep=all.filter(r=>r.depth&&((r.crazy&&!r.under_min)||r.alerted_at)).sort((a,b)=>(b.ratio||0)-(a.ratio||0)||(b.books.bet365.odds||0)-(a.books.bet365.odds||0));
 $('depthCount').textContent=deep.length?`${deep.length} with crazy odds`:'';
 $('depth').innerHTML=deep.map(sendCard).join('')||empty('Nothing crazy on lines 3–4','Lines 3–4 show here only at 3× FanDuel or more, or bet365 +25,000 and up before FanDuel posts.');
-const rows=all.filter(r=>!r.depth&&(((r.category==='fire'||r.category==='qualifies')&&!r.under_min)||r.alerted_at));
+const rows=all.filter(r=>!r.depth&&r.total!==2.5&&(((r.category==='fire'||r.category==='qualifies')&&!r.under_min)||r.alerted_at));
 rows.sort((a,b)=>(b.category==='fire')-(a.category==='fire')||(a.line!==1)-(b.line!==1)||(b.ratio||0)-(a.ratio||0));
 $('sendable').innerHTML=rows.map(sendCard).join('')||empty('Nothing confirmed right now',`Confirmed = bet365 pays at least ${data?.rules?.minimum_payout_ratio??1.8}× FanDuel on the same four legs. JuneBot also sends these to Telegram.`);
-const unc=all.filter(r=>!r.depth&&r.category==='unconfirmed'&&!r.under_min).sort((a,b)=>(a.line!==1)-(b.line!==1)||(b.books.bet365.odds||0)-(a.books.bet365.odds||0)).slice(0,40);
-$('unconfirmedCount').textContent=unc.length?`${unc.length} parlay${unc.length===1?'':'s'} · line 1 first, then best bet365 odds · U2.5 only at +30,000+ (line 1 always)`:'';
-$('unconfirmed').innerHTML=unc.map(sendCard).join('')||empty('No unconfirmed parlays yet','These appear as soon as bet365 prices a combination, before FanDuel posts its lines.')}
+const unc=all.filter(r=>!r.depth&&r.total!==2.5&&r.category==='unconfirmed'&&!r.under_min).sort((a,b)=>(a.line!==1)-(b.line!==1)||(b.books.bet365.odds||0)-(a.books.bet365.odds||0)).slice(0,40);
+$('unconfirmedCount').textContent=unc.length?`${unc.length} parlay${unc.length===1?'':'s'} · bet365 +8,000 and up · line 1 first, then best odds`:'';
+$('unconfirmed').innerHTML=unc.map(sendCard).join('')||empty('No unconfirmed parlays yet','These appear as soon as bet365 prices a combination, before FanDuel posts its lines.');
+const u25=all.filter(r=>!r.depth&&r.total===2.5&&((['fire','qualifies','unconfirmed'].includes(r.category)&&!r.under_min)||r.alerted_at)).sort((a,b)=>(a.category==='unconfirmed')-(b.category==='unconfirmed')||(b.category==='fire')-(a.category==='fire')||(a.line!==1)-(b.line!==1)||(b.books.bet365.odds||0)-(a.books.bet365.odds||0)).slice(0,40);
+$('u25Count').textContent=u25.length?`${u25.length} parlay${u25.length===1?'':'s'} · confirmed first, then line 1, then best odds`:'';
+$('u25').innerHTML=u25.map(sendCard).join('')||empty('No Under 2.5 at +30,000 yet','Under 2.5 parlays show here only when bet365 pays +30,000 or more (confirmed or not).')}
 async function showHistory(id){const r=(parlays?.rows||[]).find(x=>x.id===id);const request=++boxRequest;$('boxEyebrow').textContent='PRICE HISTORY · ACTUAL BET-SLIP QUOTES';$('boxTitle').textContent=r?takeLines(r).slice(0,3).map(t=>t.split(' — ')[0].split(' ').slice(-1)[0]).join(' / ')+` · ${r.team} U${r.total}`:'Price history';$('boxBody').textContent='Loading…';$('box').showModal();
 try{const h=await get('/combo/'+id);if(request!==boxRequest)return;const st=h.stats,s3=st.bet365,sf=st.fanduel,best=st.best_ratio;
 const tile=(label,val,sub)=>`<div class="hist-tile"><span>${esc(label)}</span><strong>${val}</strong><small>${sub}</small></div>`;
